@@ -1,0 +1,51 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: curl
+    version: v1
+    app.kubernetes.io/name: curl
+  name: curl
+  namespace: nginx-fpm
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: curl
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: curl
+        version: v1
+        app.kubernetes.io/name: curl
+    spec:
+      # initContainers:
+      # - name: git-clone
+      #   image: alpine/git
+      #   command: ["sh","-c","mkdir -p /data/html && cd /data/html && git clone https://greatergit.nl/rob/nginx-fpm-html /data/html"]
+        # command: ["sh","-c","mkdir /data/html && git clone https://greatergit.nl/rob/nginx-fpm-html /data/html"]
+        # command: ["sh","-c","ls -la /mnt /data"]
+        # volumeMounts:
+        # - name: html-vol-longhorn
+        #   mountPath: /mnt/html
+      containers:
+      - image: curlimages/curl
+        name: curl
+        command: ["sh","-c","watch -n0.1 curl -sLik http://nginx/index.php"]
+        resources: {}
+        # volumeMounts:
+        # - name: html-vol-local
+        #   mountPath: /usr/share/nginx/html
+      nodeName: worker1
+      # volumes:
+      # - name: html-vol-local
+      #   persistentVolumeClaim:
+      #     claimName: html-pvc-local
+      # - name: html-vol-longhorn
+      #   persistentVolumeClaim:
+      #     claimName: html-pvc-longhorn
+status: {}

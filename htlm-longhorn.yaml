@@ -1,0 +1,35 @@
+# ---
+# apiVersion: v1
+# kind: PersistentVolume
+# metadata:
+#   name: html-pv-longhorn
+#   namespace: nginx-fpm
+# spec:
+#   capacity:
+#     storage: 2Gi
+#   volumeMode: Filesystem
+#   accessModes:
+#     - ReadWriteMany
+#   persistentVolumeReclaimPolicy: Delete
+#   storageClassName: longhorn
+#   csi:
+#     driver: driver.longhorn.io
+#     fsType: ext4
+#     volumeAttributes:
+#       numberOfReplicas: '1'
+#       staleReplicaTimeout: '2880'
+#     volumeHandle: html-pv-longhorn
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: html-pvc-longhorn
+  namespace: nginx-fpm
+spec:
+  accessModes:
+    - ReadWriteMany
+  # volumeName: html-pv-longhorn
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 2Gi

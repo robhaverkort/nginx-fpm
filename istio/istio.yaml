@@ -1,0 +1,112 @@
+---
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: nginx-gateway
+  namespace: nginx-fpm
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "nginx.example.com"
+
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: nginx
+  namespace: nginx-fpm
+spec:
+  hosts:
+  - "nginx.example.com"
+  gateways:
+  - nginx-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: nginx
+        port:
+          number: 80
+    # fault:
+    #   abort:
+    #     percentage:
+    #       value: 25
+    #     httpStatus: 400
+
+
+---
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: nginx-destination-rule
+  namespace: nginx-fpm
+spec:
+  host: nginx 
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  - name: v2
+    labels:
+      version: v2
+---
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: fpm-destination-rule
+  namespace: nginx-fpm
+spec:
+  host: fpm
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  - name: v2
+    labels:
+      version: v2
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: nginx-virtual-service
+  namespace: nginx-fpm
+spec:
+  hosts:
+  - nginx
+  http: 
+  - route:
+    - destination:
+        host: nginx
+        subset: v1
+      weight: 50
+    - destination:
+        host: nginx
+        subset: v2
+      weight: 50
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: fpm-virtual-service
+  namespace: nginx-fpm
+spec:
+  hosts:
+  - fpm
+  tcp:
+  - route:
+    - destination:
+        host: fpm
+        subset: v1
+      weight: 50
+    - destination:
+        host: fpm
+        subset: v2
+      weight: 50
